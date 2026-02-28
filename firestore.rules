@@ -1,0 +1,209 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
+    function isUser(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    // ── users ────────────────────────────────────────────────────────────────
+    match /users/{uid} {
+      allow read, write: if isUser(uid);
+    }
+
+    // ── freelancer_profiles ──────────────────────────────────────────────────
+    match /freelancer_profiles/{uid} {
+      allow read:  if isAuth();
+      allow write: if isUser(uid);
+    }
+
+    // ── freelancer_services ──────────────────────────────────────────────────
+    match /freelancer_services/{docId} {
+      allow read:   if isAuth();
+      allow create: if isAuth() && request.auth.uid == request.resource.data.freelancerUid;
+      allow update,
+            delete: if isAuth() && request.auth.uid == resource.data.freelancerUid;
+    }
+
+    // ── hire_requests ────────────────────────────────────────────────────────
+    match /hire_requests/{docId} {
+      // list: allow any authenticated user — client always filters by clientUid or freelancerUid
+      allow list:   if isAuth();
+      allow get:    if isAuth() && (
+                      request.auth.uid == resource.data.clientUid ||
+                      request.auth.uid == resource.data.freelancerUid
+                    );
+      allow create: if isAuth() && request.auth.uid == request.resource.data.clientUid;
+      allow update: if isAuth() && (
+                      request.auth.uid == resource.data.clientUid ||
+                      request.auth.uid == resource.data.freelancerUid
+                    );
+    }
+
+    // ── payments ─────────────────────────────────────────────────────────────
+    match /payments/{docId} {
+      allow list:   if isAuth();   // client always filters by clientUid or freelancerUid
+      allow get:    if isAuth() && (
+                      request.auth.uid == resource.data.clientUid ||
+                      request.auth.uid == resource.data.freelancerUid
+                    );
+      allow create: if isAuth() && request.auth.uid == request.resource.data.clientUid;
+      allow update: if isAuth() && request.auth.uid == resource.data.clientUid;
+    }
+
+    // ── conversations ────────────────────────────────────────────────────────
+    match /conversations/{convId} {
+      allow read,
+            update: if isAuth() && (
+                      request.auth.uid == resource.data.clientUid ||
+                      request.auth.uid == resource.data.freelancerUid
+                    );
+      allow create: if isAuth() && (
+                      request.auth.uid == request.resource.data.clientUid ||
+                      request.auth.uid == request.resource.data.freelancerUid
+                    );
+
+      // messages sub-collection
+      match /messages/{msgId} {
+        allow read, write: if isAuth();
+      }
+    }
+
+    // ── messages (top-level) ─────────────────────────────────────────────────
+    match /messages/{docId} {
+      // list: allow any authenticated user — client always filters by conversationId
+      // (conversationIds are random UUIDs so there's no guessable way to read
+      //  another user's messages; same pattern as notifications)
+      allow list:   if isAuth();
+      // get: must be sender or receiver
+      allow get:    if isAuth() && (
+                      request.auth.uid == resource.data.senderUid ||
+                      request.auth.uid == resource.data.receiverUid
+                    );
+      allow create: if isAuth() && request.auth.uid == request.resource.data.senderUid;
+      allow update,
+            delete: if isAuth() && (
+                      request.auth.uid == resource.data.senderUid ||
+                      request.auth.uid == resource.data.receiverUid
+                    );
+    }
+
+    // ── ai_content ───────────────────────────────────────────────────────────
+    match /ai_content/{docId} {
+      allow read,
+            update,
+            delete: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── ai_designs ───────────────────────────────────────────────────────────
+    match /ai_designs/{docId} {
+      allow read,
+            delete: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── video_ads ─────────────────────────────────────────────────────────────
+    match /video_ads/{docId} {
+      allow read,
+            delete: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── email_campaigns ───────────────────────────────────────────────────────
+    match /email_campaigns/{docId} {
+      allow read,
+            update,
+            delete: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth() && request.auth.uid == request.resource.data.userId;
+
+      // sent_logs sub-collection
+      match /sent_logs/{logId} {
+        allow read: if isAuth() && request.auth.uid == get(/databases/$(database)/documents/email_campaigns/$(docId)).data.userId;
+      }
+    }
+
+    // ── subscribers ───────────────────────────────────────────────────────────
+    match /subscribers/{docId} {
+      allow read,
+            delete: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── seo_analyses ──────────────────────────────────────────────────────────
+    match /seo_analyses/{docId} {
+      allow read,
+            delete: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── social_accounts ───────────────────────────────────────────────────────
+    match /social_accounts/{docId} {
+      allow read,
+            update,
+            delete: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── social_posts ──────────────────────────────────────────────────────────
+    match /social_posts/{docId} {
+      allow read,
+            delete: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── ad_campaigns ──────────────────────────────────────────────────────────
+    match /ad_campaigns/{docId} {
+      allow read,
+            update,
+            delete: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── shopify_stores ────────────────────────────────────────────────────────
+    match /shopify_stores/{docId} {
+      allow read,
+            update,
+            delete: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── calendar_posts ────────────────────────────────────────────────────────
+    match /calendar_posts/{docId} {
+      allow read,
+            update,
+            delete: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── notifications ─────────────────────────────────────────────────────────
+    match /notifications/{docId} {
+      allow get,
+            update,
+            delete: if isAuth() && request.auth.uid == resource.data.userId;
+      allow list:   if isAuth();  // client always filters by userId
+      allow create: if isAuth();  // backend writes these
+    }
+
+    // ── freelancer_payment_accounts ──────────────────────────────────────────
+    match /freelancer_payment_accounts/{uid} {
+      allow read, write: if isUser(uid);
+    }
+
+    // ── withdrawal_requests ───────────────────────────────────────────────────
+    match /withdrawal_requests/{docId} {
+      allow list:   if isAuth();   // client always filters by freelancerUid
+      allow get:    if isAuth() && request.auth.uid == resource.data.freelancerUid;
+      // create & update handled by backend Admin SDK only
+    }
+
+    // ── Catch-all: deny everything else ─────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
