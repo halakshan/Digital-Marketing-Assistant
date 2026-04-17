@@ -1,0 +1,68 @@
+export const FREELANCERS = [
+  {
+    id: 1, name: "Kavya Perera",      role: "Graphic Designer",        category: "designer",
+    avatar: "K", rating: 4.9, reviews: 128, rate: "LKR 3,500/hr",
+    skills: ["Logo Design", "Branding", "Social Media", "Canva"],
+    bio: "5+ years creating stunning brand identities for Sri Lankan SMEs. Specializing in modern minimalist designs.",
+    projects: 214, location: "Colombo", verified: true,
+    gradient: "from-violet-500 to-indigo-600",
+  },
+  {
+    id: 2, name: "Rashan Fernando",   role: "Video Editor",            category: "video",
+    avatar: "R", rating: 4.8, reviews: 96,  rate: "LKR 4,000/hr",
+    skills: ["Premiere Pro", "After Effects", "Reels", "YouTube"],
+    bio: "Professional video editor specializing in social media content, ads, and YouTube videos.",
+    projects: 178, location: "Kandy", verified: true,
+    gradient: "from-pink-500 to-rose-600",
+  },
+  {
+    id: 3, name: "Nimali Silva",      role: "Web Developer",           category: "developer",
+    avatar: "N", rating: 5.0, reviews: 64,  rate: "LKR 5,000/hr",
+    skills: ["React", "Next.js", "TypeScript", "Tailwind"],
+    bio: "Full-stack developer building modern, fast websites. Expert in React and Next.js ecosystems.",
+    projects: 89,  location: "Colombo", verified: true,
+    gradient: "from-blue-500 to-cyan-600",
+  },
+  {
+    id: 4, name: "Dilshan Wickrama",  role: "Photographer",            category: "photographer",
+    avatar: "D", rating: 4.7, reviews: 82,  rate: "LKR 6,000/shoot",
+    skills: ["Product Photography", "Portraits", "Events", "Editing"],
+    bio: "Award-winning photographer capturing your brand story through stunning visuals.",
+    projects: 145, location: "Galle", verified: true,
+    gradient: "from-amber-500 to-orange-600",
+  },
+  {
+    id: 5, name: "Thilini Bandara",   role: "Social Media Influencer", category: "influencer",
+    avatar: "T", rating: 4.9, reviews: 201, rate: "LKR 2,000/post",
+    skills: ["Instagram", "TikTok", "Fashion", "Lifestyle"],
+    bio: "120K+ Instagram followers. Fashion & lifestyle influencer based in Colombo.",
+    projects: 312, location: "Colombo", verified: true,
+    gradient: "from-fuchsia-500 to-purple-600",
+  },
+  {
+    id: 6, name: "Asanka Jayasinghe", role: "Content Writer",          category: "writer",
+    avatar: "A", rating: 4.6, reviews: 53,  rate: "LKR 1,500/article",
+    skills: ["SEO Writing", "Blogs", "Sinhala", "Tamil", "English"],
+    bio: "Multilingual content writer creating SEO-optimized articles in Sinhala, Tamil and English.",
+    projects: 97,  location: "Negombo", verified: false,
+    gradient: "from-teal-500 to-green-600",
+  },
+  {
+    id: 7, name: "Sachini Madushani", role: "Graphic Designer",        category: "designer",
+    avatar: "S", rating: 4.8, reviews: 74,  rate: "LKR 2,800/hr",
+    skills: ["Illustration", "Packaging", "Print Design", "Adobe XD"],
+    bio: "Creative illustrator and packaging designer. Bringing your product to life with unique visuals.",
+    projects: 132, location: "Matara", verified: true,
+    gradient: "from-rose-500 to-pink-600",
+  },
+  {
+    id: 8, name: "Chamara Gunasekara",role: "Video Editor",            category: "video",
+    avatar: "C", rating: 4.7, reviews: 41,  rate: "LKR 3,200/hr",
+    skills: ["DaVinci Resolve", "Motion Graphics", "Color Grading", "TikTok"],
+    bio: "Cinematic video editor with expertise in color grading and motion graphics.",
+    projects: 68,  location: "Colombo", verified: false,
+    gradient: "from-indigo-500 to-blue-600",
+  },
+];
+
+export type Freelancer = typeof FREELANCERS[0];
