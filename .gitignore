@@ -60,10 +60,10 @@ frontend/.claude/
 .firebase/
 
 # ── Stale root-level duplicates (all logic lives inside backend/) ─────────────
-config/
-controllers/
-middleware/
-routes/
+/config/
+/controllers/
+/middleware/
+/routes/
 
 # ── Old / unused project scaffold ─────────────────────────────────────────────
 dm-assistant/
