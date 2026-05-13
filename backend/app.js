@@ -7,18 +7,33 @@ dotenv.config();
 
 const app = express();
 
-// ── Middleware ──
+// ── CORS ─────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  /^http:\/\/localhost(:\d+)?$/,                    // any localhost port (dev)
+  process.env.FRONTEND_URL,                         // e.g. https://yourdomain.com
+].filter(Boolean);
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || /^http:\/\/localhost(:\d+)?$/.test(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
+    if (!origin) return callback(null, true);        // server-to-server / curl
+    const allowed = ALLOWED_ORIGINS.some(o =>
+      o instanceof RegExp ? o.test(origin) : o === origin
+    );
+    if (allowed) callback(null, true);
+    else callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
 }));
-app.use(express.json());
+
+// ── Body parsing ──────────────────────────────────────────────────────────────
+// Stripe webhook MUST receive the raw body — skip JSON parsing for that route
+app.use((req, res, next) => {
+  if (req.originalUrl === "/api/payments/webhook") {
+    next();                                          // paymentRoutes handles its own express.raw()
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
 // ── Rate Limiters ──────────────────────────────────────────────────────────────
 
@@ -84,7 +99,11 @@ app.use((req, res) => {
 // ── Error handler ──
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: err.message || "Internal server error" });
+  // Only expose detailed error message in development — never in production
+  const message = process.env.NODE_ENV === "production"
+    ? "Internal server error"
+    : (err.message || "Internal server error");
+  res.status(err.status || 500).json({ message });
 });
 
 module.exports = app;
