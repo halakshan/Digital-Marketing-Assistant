@@ -270,12 +270,29 @@ const releasePayment = async (req, res) => {
   const { note }      = req.body;
 
   try {
-    const paySnap = await db.collection("payments").doc(paymentId).get();
+    let paySnap = await db.collection("payments").doc(paymentId).get();
     if (!paySnap.exists) return res.status(404).json({ message: "Payment not found" });
 
-    const pay = paySnap.data();
+    let pay = paySnap.data();
     if (pay.clientUid !== clientUid) return res.status(403).json({ message: "Not authorized" });
-    if (pay.status !== "escrowed") return res.status(400).json({ message: "Payment is not in escrow" });
+
+    // If the supplied paymentId isn't escrowed (e.g. a stale "pending" doc from a
+    // previous abandoned attempt), find the real escrowed payment for this hire request.
+    if (pay.status !== "escrowed") {
+      const altSnap = await db.collection("payments")
+        .where("hireRequestId", "==", pay.hireRequestId)
+        .where("status", "==", "escrowed")
+        .limit(1)
+        .get();
+
+      if (!altSnap.empty) {
+        paySnap = altSnap.docs[0];
+        pay     = paySnap.data();
+        if (pay.clientUid !== clientUid) return res.status(403).json({ message: "Not authorized" });
+      } else {
+        return res.status(400).json({ message: "Payment is not in escrow" });
+      }
+    }
 
     await paySnap.ref.update({
       status:      "released",

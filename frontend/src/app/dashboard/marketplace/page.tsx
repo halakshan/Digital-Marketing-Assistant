@@ -1046,7 +1046,11 @@ export default function MarketplacePage() {
                             <button
                               onClick={async () => {
                                 if (!confirm(`Approve work and release payment to ${h.freelancerName}?`)) return;
-                                const payRec = payments.find(p => p.hireRequestId === h.id);
+                                // Prefer the escrowed payment — stale "pending" docs from
+                                // abandoned modal sessions are ignored automatically.
+                                const payRec =
+                                  payments.find(p => p.hireRequestId === h.id && p.status === "escrowed") ||
+                                  payments.find(p => p.hireRequestId === h.id);
                                 if (!payRec) { showToast("Payment record not found", false); return; }
                                 try {
                                   const res = await fetch(`${API}/payments/release/${payRec.id}`, {
