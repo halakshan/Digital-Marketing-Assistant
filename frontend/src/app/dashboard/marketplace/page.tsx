@@ -174,7 +174,7 @@ function FreelancerModal({ f, onClose, onHire, onMessage, alreadyHired }: {
               <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                 {f.location && <span className="text-xs text-white/60">📍 {f.location}</span>}
                 <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border ${f.available?"bg-green-500/30 border-green-400/50 text-green-300":"bg-black/30 border-white/20 text-white/50"}`}>
-                  {f.available?"● Available":"○ Busy"}
+                  {f.available?"● Active":"○ Busy"}
                 </span>
                 {f.rate && <span className="text-xs bg-black/25 border border-white/20 text-white px-2.5 py-0.5 rounded-full font-bold">{f.rate}</span>}
               </div>
@@ -417,7 +417,7 @@ function FreelancerCard({ f, onHire, onMessage, onView, alreadyHired }: {
             {f.location && <p className="text-[11px] text-gray-500 mt-0.5">📍 {f.location}</p>}
           </div>
           <span className={`text-[10px] font-bold px-2 py-1 rounded-full border flex-shrink-0 ${f.available?"bg-green-500/15 border-green-500/30 text-green-400":"bg-gray-500/15 border-gray-500/30 text-gray-500"}`}>
-            {f.available?"● Open":"○ Busy"}
+            {f.available?"● Active":"○ Busy"}
           </span>
         </div>
 
