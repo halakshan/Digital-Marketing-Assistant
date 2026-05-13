@@ -150,10 +150,16 @@ export default function ReportsPage() {
     const { start, end } = monthRange(selYear, selMonth);
 
     try {
-      // Helper: fetch a collection filtered by userId, then client-side date-filter
-      const byUser = async (col: string, field = "userId") => {
-        const snap = await getDocs(query(collection(db, col), where(field, "==", uid)));
-        return snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+      // Helper: fetch a collection filtered by a field — returns [] on permission error
+      const byUser = async (col: string, field = "userId"): Promise<any[]> => {
+        try {
+          const snap = await getDocs(query(collection(db, col), where(field, "==", uid)));
+          return snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+        } catch (e: any) {
+          // Gracefully handle permission errors (e.g., rules not yet deployed)
+          console.warn(`[Reports] Could not fetch ${col}:`, e.code || e.message);
+          return [];
+        }
       };
 
       const [
@@ -170,7 +176,12 @@ export default function ReportsPage() {
         byUser("hire_requests", "clientUid"),
         byUser("hire_requests", "freelancerUid"),
         byUser("subscribers"),
-        getDocs(query(collection(db, "reviews"), where("freelancerUid", "==", uid))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() } as any))),
+        (async (): Promise<any[]> => {
+          try {
+            const s = await getDocs(query(collection(db, "reviews"), where("freelancerUid", "==", uid)));
+            return s.docs.map(d => ({ id: d.id, ...d.data() } as any));
+          } catch { return []; }
+        })(),
         byUser("calendar_posts"),
       ]);
 
