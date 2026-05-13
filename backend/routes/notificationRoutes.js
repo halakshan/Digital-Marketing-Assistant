@@ -27,24 +27,8 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-// PATCH /api/notifications/:id/read — mark single notification as read
-router.patch("/:id/read", protect, async (req, res) => {
-  const { id } = req.params;
-  const uid    = req.user.uid;
-  try {
-    const doc = await admin.firestore().collection("notifications").doc(id).get();
-    if (!doc.exists || doc.data().userId !== uid) {
-      return res.status(403).json({ message: "Notification not found" });
-    }
-    await admin.firestore().collection("notifications").doc(id).update({ read: true });
-    res.json({ success: true });
-  } catch (err) {
-    console.error("Mark read error:", err.message);
-    res.status(500).json({ message: "Failed to mark as read" });
-  }
-});
-
 // PATCH /api/notifications/read-all — mark all as read
+// NOTE: must be declared BEFORE /:id/read to avoid Express matching "read-all" as an :id
 router.patch("/read-all", protect, async (req, res) => {
   const uid = req.user.uid;
   try {
@@ -62,6 +46,23 @@ router.patch("/read-all", protect, async (req, res) => {
   } catch (err) {
     console.error("Mark all read error:", err.message);
     res.status(500).json({ message: "Failed to mark all as read" });
+  }
+});
+
+// PATCH /api/notifications/:id/read — mark single notification as read
+router.patch("/:id/read", protect, async (req, res) => {
+  const { id } = req.params;
+  const uid    = req.user.uid;
+  try {
+    const doc = await admin.firestore().collection("notifications").doc(id).get();
+    if (!doc.exists || doc.data().userId !== uid) {
+      return res.status(403).json({ message: "Notification not found" });
+    }
+    await admin.firestore().collection("notifications").doc(id).update({ read: true });
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Mark read error:", err.message);
+    res.status(500).json({ message: "Failed to mark as read" });
   }
 });
 

@@ -31,8 +31,11 @@ service cloud.firestore {
 
     // ── hire_requests ────────────────────────────────────────────────────────
     match /hire_requests/{docId} {
-      // list: allow any authenticated user — client always filters by clientUid or freelancerUid
-      allow list:   if isAuth();
+      // list: only the client or freelancer involved can query their own requests
+      allow list:   if isAuth() && (
+                      request.auth.uid == resource.data.clientUid ||
+                      request.auth.uid == resource.data.freelancerUid
+                    );
       allow get:    if isAuth() && (
                       request.auth.uid == resource.data.clientUid ||
                       request.auth.uid == resource.data.freelancerUid
@@ -46,7 +49,11 @@ service cloud.firestore {
 
     // ── payments ─────────────────────────────────────────────────────────────
     match /payments/{docId} {
-      allow list:   if isAuth();   // client always filters by clientUid or freelancerUid
+      // list: only parties involved in the payment can query
+      allow list:   if isAuth() && (
+                      request.auth.uid == resource.data.clientUid ||
+                      request.auth.uid == resource.data.freelancerUid
+                    );
       allow get:    if isAuth() && (
                       request.auth.uid == resource.data.clientUid ||
                       request.auth.uid == resource.data.freelancerUid
@@ -75,10 +82,11 @@ service cloud.firestore {
 
     // ── messages (top-level) ─────────────────────────────────────────────────
     match /messages/{docId} {
-      // list: allow any authenticated user — client always filters by conversationId
-      // (conversationIds are random UUIDs so there's no guessable way to read
-      //  another user's messages; same pattern as notifications)
-      allow list:   if isAuth();
+      // list: only sender or receiver can query messages
+      allow list:   if isAuth() && (
+                      request.auth.uid == resource.data.senderUid ||
+                      request.auth.uid == resource.data.receiverUid
+                    );
       // get: must be sender or receiver
       allow get:    if isAuth() && (
                       request.auth.uid == resource.data.senderUid ||
@@ -185,8 +193,8 @@ service cloud.firestore {
       allow get,
             update,
             delete: if isAuth() && request.auth.uid == resource.data.userId;
-      allow list:   if isAuth();  // client always filters by userId
-      allow create: if isAuth();  // backend writes these
+      allow list:   if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth();  // backend (Admin SDK) writes these
     }
 
     // ── freelancer_payment_accounts ──────────────────────────────────────────
@@ -196,7 +204,7 @@ service cloud.firestore {
 
     // ── withdrawal_requests ───────────────────────────────────────────────────
     match /withdrawal_requests/{docId} {
-      allow list:   if isAuth();   // client always filters by freelancerUid
+      allow list:   if isAuth() && request.auth.uid == resource.data.freelancerUid;
       allow get:    if isAuth() && request.auth.uid == resource.data.freelancerUid;
       // create & update handled by backend Admin SDK only
     }

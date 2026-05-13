@@ -68,3 +68,7 @@ frontend/.claude/
 # ── Old / unused project scaffold ─────────────────────────────────────────────
 dm-assistant/
 .clone/
+
+# ── Build / automation scripts ────────────────────────────────────────────────
+build-history.ps1
+frontend/.gitignore
