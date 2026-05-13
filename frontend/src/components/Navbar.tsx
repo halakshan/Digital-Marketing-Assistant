@@ -26,7 +26,7 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center gap-8">
           {NAV_LINKS.map(l => (
-            <a key={l} href={`#${l.toLowerCase().replace(" ", "-")}`}
+            <a key={l} href={`#${l.toLowerCase().replace(/\s+/g, "-")}`}
               className="text-sm text-gray-300 hover:text-violet-400 transition-colors">
               {l}
             </a>
@@ -49,7 +49,7 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden bg-[#0f0f1e] border-t border-white/10 px-6 py-4 flex flex-col gap-4">
           {NAV_LINKS.map(l => (
-            <a key={l} href={`#${l.toLowerCase().replace(" ", "-")}`}
+            <a key={l} href={`#${l.toLowerCase().replace(/\s+/g, "-")}`}
               className="text-gray-300 hover:text-violet-400"
               onClick={() => setMenuOpen(false)}>
               {l}
