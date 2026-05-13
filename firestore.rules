@@ -100,6 +100,15 @@ service cloud.firestore {
                     );
     }
 
+    // ── reviews ──────────────────────────────────────────────────────────────────
+    match /reviews/{docId} {
+      // Any authenticated user can read reviews (public-facing ratings)
+      allow read:   if isAuth();
+      // Only the client named in the document can create a review
+      allow create: if isAuth() && request.auth.uid == request.resource.data.clientUid;
+      // Reviews are immutable once submitted — no update or delete
+    }
+
     // ── ai_content ───────────────────────────────────────────────────────────
     match /ai_content/{docId} {
       allow read,

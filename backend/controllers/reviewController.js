@@ -98,4 +98,28 @@ const getMyReviews = async (req, res) => {
   }
 };
 
-module.exports = { submitReview, getMyReviews };
+// ── GET /api/reviews/freelancer/:uid ─────────────────────────────────────────
+// Returns all reviews for a specific freelancer — used by the marketplace modal.
+const getFreelancerReviews = async (req, res) => {
+  const { uid } = req.params;
+  try {
+    const snap = await db.collection("reviews")
+      .where("freelancerUid", "==", uid)
+      .get();
+
+    const reviews = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => {
+        const ta = a.createdAt?.toDate?.()?.getTime?.() ?? 0;
+        const tb = b.createdAt?.toDate?.()?.getTime?.() ?? 0;
+        return tb - ta;
+      });
+
+    res.json({ success: true, reviews });
+  } catch (err) {
+    console.error("getFreelancerReviews:", err.message);
+    res.status(500).json({ message: "Failed to fetch reviews" });
+  }
+};
+
+module.exports = { submitReview, getMyReviews, getFreelancerReviews };

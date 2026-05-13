@@ -21,6 +21,7 @@ const SIDEBAR_LINKS = [
   { icon: "📢", label: "Ad Campaigns",     href: "/dashboard/ad-campaigns",     group: "market"  },
   { icon: "📧", label: "Email Campaigns",  href: "/dashboard/campaigns",        group: "market"  },
   { icon: "📈", label: "SEO Analytics",    href: "/dashboard/seo",              group: "market"  },
+  { icon: "📊", label: "Monthly Reports",  href: "/dashboard/reports",          group: "market"  },
   // ── Connect ──
   { icon: "👥", label: "Marketplace",      href: "/dashboard/marketplace",      group: "connect" },
   { icon: "💬", label: "Messages",         href: "/dashboard/messages",         group: "connect" },

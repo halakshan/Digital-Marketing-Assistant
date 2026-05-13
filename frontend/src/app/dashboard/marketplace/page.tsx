@@ -53,6 +53,10 @@ interface Payment {
   platformFee?: number; freelancerNet?: number;
 }
 
+interface ModalReview {
+  id: string; clientName: string; stars: number; text: string; createdAt: any;
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const GRADIENTS = [
   "from-violet-500 to-indigo-600","from-pink-500 to-rose-600",
@@ -100,7 +104,27 @@ function FreelancerModal({ f, onClose, onHire, onMessage, alreadyHired }: {
 }) {
   const [services,    setServices]    = useState<Service[]>([]);
   const [svcLoading,  setSvcLoading]  = useState(true);
+  const [revs,        setRevs]        = useState<ModalReview[]>([]);
+  const [revLoading,  setRevLoading]  = useState(true);
   const grad = gradFor(f.uid);
+
+  // Load reviews for this freelancer directly from Firestore
+  useEffect(()=>{
+    setRevLoading(true);
+    getDocs(query(collection(db,"reviews"), where("freelancerUid","==",f.uid)))
+      .then(snap=>{
+        const sorted = snap.docs
+          .map(d=>({id:d.id,...d.data()} as ModalReview))
+          .sort((a,b)=>{
+            const ta=a.createdAt?.toDate?.()?.getTime?.()||0;
+            const tb=b.createdAt?.toDate?.()?.getTime?.()||0;
+            return tb-ta;
+          });
+        setRevs(sorted);
+      })
+      .catch(()=>{})
+      .finally(()=>setRevLoading(false));
+  },[f.uid]);
 
   useEffect(()=>{
     setSvcLoading(true);
@@ -236,6 +260,52 @@ function FreelancerModal({ f, onClose, onHire, onMessage, alreadyHired }: {
                 <div className="text-3xl mb-2">🛠️</div>
                 <p className="text-sm text-gray-400 font-medium">No services listed yet</p>
                 <p className="text-xs text-gray-600 mt-1">This freelancer hasn't added services. You can still send a hire request.</p>
+              </div>
+            )}
+          </div>
+
+          {/* ── Recent Reviews ── */}
+          <div>
+            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">
+              Reviews {!revLoading && <span className="text-gray-600 normal-case">({revs.length})</span>}
+            </p>
+
+            {revLoading ? (
+              <div className="space-y-2">
+                {[1,2].map(i=><div key={i} className="h-16 bg-white/5 rounded-xl animate-pulse"/>)}
+              </div>
+            ) : revs.length > 0 ? (
+              <div className="space-y-2">
+                {revs.slice(0,5).map(r=>(
+                  <div key={r.id} className="bg-white/5 border border-white/10 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-violet-500/25 border border-violet-500/30 flex items-center justify-center text-xs font-bold text-violet-300 flex-shrink-0">
+                          {r.clientName?.charAt(0)?.toUpperCase()||"C"}
+                        </div>
+                        <span className="text-xs font-semibold text-white">{r.clientName||"Client"}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Stars r={r.stars} size={3}/>
+                        <span className="text-xs font-bold text-yellow-400">{r.stars}.0</span>
+                      </div>
+                    </div>
+                    {r.text ? (
+                      <p className="text-xs text-gray-400 leading-relaxed line-clamp-3">{r.text}</p>
+                    ) : (
+                      <p className="text-xs text-gray-600 italic">No written review</p>
+                    )}
+                    <p className="text-[11px] text-gray-600 mt-1.5">
+                      {r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+                <div className="text-3xl mb-2">⭐</div>
+                <p className="text-sm text-gray-400 font-medium">No reviews yet</p>
+                <p className="text-xs text-gray-600 mt-1">Be the first to work with and review {f.fullName}.</p>
               </div>
             )}
           </div>
